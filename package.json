@@ -36,6 +36,7 @@
     "bootstrap-icons": "^1.10.5",
     "core-js": "^3.20.1",
     "cryptocurrency-icons": "^0.17.1",
+    "dmg-builder": "^25.0.0-alpha.10",
     "electron-config": "^2.0.0",
     "is-electron": "^2.2.1",
     "linkify-string": "^3.0.4",
@@ -62,7 +63,7 @@
     "eslint-plugin-vue": "^7.20.0",
     "sass": "^1.69.5",
     "sass-loader": "^10",
-    "vue-cli-plugin-electron-builder": "~2.0.0-rc.6"
+    "vue-cli-plugin-electron-builder": "^2.1.1"
   },
   "resolutions": {
     "vue-cli-plugin-electron-builder/electron-builder": "^23.0.3"
