@@ -1,5 +1,6 @@
 import storageRepository from "../repositories/storageRepository";
 import dbRepository from "../repositories/dbRepository";
+import s3 from "./s3";
 import { Toast, Modal } from "bootstrap";
 import migrations from "../migrations/migrations";
 import isElectron from "is-electron";
@@ -13,10 +14,10 @@ export default {
     data.repeating_events_by_date = {};
     let db_req = dbRepository.open();
 
-    db_req.onsuccess = function (event) {
+    db_req.onsuccess = function(event) {
       var db = event.target.result;
       let request = dbRepository.selectAll(db, "todo_lists");
-      request.onsuccess = function () {
+      request.onsuccess = function() {
         let cursor = request.result;
         if (cursor) {
           data.todoLists[cursor.key] = cursor.value;
@@ -29,7 +30,7 @@ export default {
   },
   import(event) {
     let fr = readFile(event.target.files);
-    fr.onload = function () {
+    fr.onload = function() {
       var toast = new Toast(document.getElementById("invalidFile"));
       try {
         var data = JSON.parse(fr.result);
@@ -52,26 +53,35 @@ export default {
 
     storageRepository.clean();
     let db_req = dbRepository.open();
-    db_req.onsuccess = function (event) {
+    db_req.onsuccess = function(event) {
       var db = event.target.result;
       let request = dbRepository.clear(db, "todo_lists");
-      request.onsuccess = function () {
+      request.onsuccess = function() {
         let request2 = dbRepository.clear(db, "repeating_events");
-        request2.onsuccess = function () {
+        request2.onsuccess = function() {
           let request3 = dbRepository.clear(db, "repeating_events_by_date");
-          request3.onsuccess = function () {
+          request3.onsuccess = function() {
             location.reload();
           };
         };
       };
     };
   },
+  sync() {
+    s3.listObjects('weektodo-app.netlify.app', function(err, data) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(data);
+      }
+    });
+  },
 };
 
 function getRepeatinEventData(filename, data, event) {
   var db = event.target.result;
   let request = dbRepository.selectAll(db, "repeating_events");
-  request.onsuccess = function () {
+  request.onsuccess = function() {
     let cursor = request.result;
     if (cursor) {
       data.repeating_events[cursor.key] = cursor.value;
@@ -85,7 +95,7 @@ function getRepeatinEventData(filename, data, event) {
 function getRepeatinEventByDateData(filename, data, event) {
   var db = event.target.result;
   let request = dbRepository.selectAll(db, "repeating_events_by_date");
-  request.onsuccess = function () {
+  request.onsuccess = function() {
     let cursor = request.result;
     if (cursor) {
       data.repeating_events_by_date[cursor.key] = cursor.value;
@@ -105,10 +115,10 @@ function createExportLink(filename, fileBody) {
   document.body.appendChild(element);
   element.click();
   document.body.removeChild(element);
-  setTimeout(function () {
+  setTimeout(function() {
     let exportingModal = Modal.getInstance(document.getElementById("exportingModal"));
     exportingModal.hide();
-  },1000);
+  }, 1000);
 }
 
 function readFile(files) {
@@ -137,10 +147,10 @@ function importLocalStorageData(data) {
 function importIndexedDbData(a_data, table) {
   var data = a_data;
   let db_req = dbRepository.open();
-  db_req.onsuccess = function (event) {
+  db_req.onsuccess = function(event) {
     let db = event.target.result;
     let request = dbRepository.clear(db, table);
-    request.onsuccess = function () {
+    request.onsuccess = function() {
       importDbRecords(db, data, table);
     };
   };
@@ -176,7 +186,7 @@ function importDbRecords(db, data_a, table) {
     while (i--) {
       req = dbRepository.add(db, table, keys[i], data[keys[i]]);
     }
-    req.onsuccess = function () {
+    req.onsuccess = function() {
       if (table == "todo_lists") {
         importIndexedDbData(data_a, "repeating_events");
       } else if (table == "repeating_events") {

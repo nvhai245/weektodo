@@ -1,6 +1,5 @@
 <template>
-  <div class="modal fade" id="configModal" tabindex="-1"
-    aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal fade" id="configModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
@@ -34,7 +33,8 @@
               </button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" id="config-data-tab" data-bs-toggle="tab" data-bs-target="#config-data" role="tab">
+              <button class="nav-link" id="config-data-tab" data-bs-toggle="tab" data-bs-target="#config-data"
+                role="tab">
                 Data
               </button>
             </li>
@@ -67,9 +67,9 @@
 
                 <div class="form-check form-switch d-flex px-1 mb-3 justify-content-between">
                   <label class="form-check-label flex-fill" for="customListsSetting">{{ $t("settings.customLists")
-                  }}</label>
-                  <input class="form-check-input" type="checkbox" id="customListsSetting" v-model="configData.customList"
-                    @change="changeConfig('customList', configData.customList)" />
+                    }}</label>
+                  <input class="form-check-input" type="checkbox" id="customListsSetting"
+                    v-model="configData.customList" @change="changeConfig('customList', configData.customList)" />
                 </div>
 
                 <div v-if="isElectron()" class="form-check form-switch d-flex px-1 mb-3 justify-content-between">
@@ -102,7 +102,7 @@
 
                 <div class="form-check form-switch d-flex px-1 mb-3 justify-content-between">
                   <label class="form-check-label flex-fill" for="reportErrors">{{ $t("settings.reportErrors")
-                  }}</label>
+                    }}</label>
                   <input class="form-check-input" type="checkbox" id="reportErrors" v-model="configData.reportErrors"
                     @change="setSendErrors()" />
                 </div>
@@ -112,26 +112,27 @@
               <div class="d-flex flex-column mt-2 h-100">
                 <div class="form-check form-switch d-flex px-1 mb-3 justify-content-between">
                   <label class="form-check-label flex-fill" for="moveOldTasks">{{ $t("settings.moveOldTasks")
-                  }}</label>
+                    }}</label>
                   <input class="form-check-input" type="checkbox" id="moveOldTasks" v-model="configData.moveOldTasks"
                     @change="changeConfig('moveOldTasks', configData.moveOldTasks)" />
                 </div>
                 <div class="form-check form-switch d-flex px-1 mb-3 justify-content-between">
                   <label class="form-check-label flex-fill" for="weekStartOnMonday">{{ $t("settings.weekStartOnMonday")
-                  }}</label>
-                  <input class="form-check-input" type="checkbox" id="weekStartOnMonday" v-model="configData.weekStartOnMonday"
+                    }}</label>
+                  <input class="form-check-input" type="checkbox" id="weekStartOnMonday"
+                    v-model="configData.weekStartOnMonday"
                     @change="changeConfig('weekStartOnMonday', configData.weekStartOnMonday)" />
                 </div>
                 <div class="form-check form-switch d-flex px-1 mb-3 justify-content-between">
                   <label class="form-check-label flex-fill" for="moveOldTasks">{{ $t("settings.startCalendarYesterday")
-                  }}</label>
+                    }}</label>
                   <input class="form-check-input" type="checkbox" id="moveOldTasks"
                     v-model="configData.startCalendarYesterday"
                     @change="changeConfig('startCalendarYesterday', configData.startCalendarYesterday)" />
                 </div>
                 <div class="form-check form-switch d-flex px-1 mb-3 justify-content-between">
                   <label class="form-check-label flex-fill" for="autoReorderTasks">{{ $t("settings.autoReorderTasks")
-                  }}</label>
+                    }}</label>
                   <input class="form-check-input" type="checkbox" id="autoReorderTasks"
                     v-model="configData.autoReorderTasks"
                     @change="changeConfig('autoReorderTasks', configData.autoReorderTasks)" />
@@ -193,7 +194,7 @@
 
                 <div class="px-1 mb-3 zoom-config">
                   <label for="zoomConfig" class="form-check-label">{{ $t("settings.zoom") }}: {{ configData.zoom
-                  }}%</label>
+                    }}%</label>
                   <input type="range" class="form-range mt-2 px-2" min="50" max="200" id="zoomConfig" step="5"
                     v-model="configData.zoom" @change="changeConfig('zoom', configData.zoom)" />
                 </div>
@@ -202,8 +203,8 @@
                   <label class="form-check-label" for="compactViewSetting">{{
                     $t("settings.compactView")
                   }}</label>
-                  <input class="form-check-input" type="checkbox" id="compactViewSetting" v-model="configData.compactView"
-                    @change="changeConfig('compactView', configData.compactView)" />
+                  <input class="form-check-input" type="checkbox" id="compactViewSetting"
+                    v-model="configData.compactView" @change="changeConfig('compactView', configData.compactView)" />
                 </div>
                 <div class="form-check form-switch d-flex px-1 mb-3 justify-content-between">
                   <label class="form-check-label" for="fullscreenToDoModal">{{
@@ -291,6 +292,15 @@
                         {{ $t("settings.clear") }}
                       </button>
                     </div>
+
+                    <div class="form-check form-switch d-flex px-1 mb-3 justify-content-between align-items-center">
+                      <label class="form-check-label" for="sync-data-btn">{{ $t("settings.syncData") }}</label>
+                      <button id="sync-data-btn" type="button" class="btn py-1 px-2 border" style="width: 140px;"
+                        @click="syncData">
+                        <i class="icons bi-cloud-check mx-2"></i>
+                        {{ $t("settings.sync") }}
+                      </button>
+                    </div>
                   </div>
                   <input type="file" id="file-selector" class="d-none" accept=".wtdb" ref="loadData"
                     @change="importData($event)" />
@@ -376,6 +386,9 @@ export default {
       exportingModal.show();
       exportTool.export();
     },
+    syncData: function () {
+      exportTool.sync();
+    },
     importData: function (event) {
       let configModal = Modal.getInstance(document.getElementById("configModal"));
       configModal.hide();
@@ -457,9 +470,9 @@ export default {
 #config-links-menu {
   border-right: 1px solid rgba(0, 0, 0, 0.06);
 
-.dark-theme & {
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
-}
+  .dark-theme & {
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+  }
 }
 
 
