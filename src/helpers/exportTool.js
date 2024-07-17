@@ -3,6 +3,7 @@ import dbRepository from "../repositories/dbRepository";
 import { Toast, Modal } from "bootstrap";
 import migrations from "../migrations/migrations";
 import isElectron from "is-electron";
+import sha256 from 'crypto-js/sha256';
 
 export default {
   export() {
@@ -27,6 +28,38 @@ export default {
       };
     };
   },
+  uploadFile(filename, fileBody, hash) {
+    const formData = new FormData();
+    formData.append("file", new Blob([fileBody], { type: "application/json" }), filename);
+    formData.append("hash", hash);
+    fetch("http://localhost:8080/upload", {
+      method: "POST",
+      body: formData
+    });
+  },
+  localHash() {
+    var filename = "WeekToDoBackup.wtdb";
+    var data = storageRepository.as_json();
+    data.todoLists = {};
+    data.repeating_events = {};
+    data.repeating_events_by_date = {};
+    let db_req = dbRepository.open();
+
+    db_req.onsuccess = function(event) {
+      var db = event.target.result;
+      let request = dbRepository.selectAll(db, "todo_lists");
+      request.onsuccess = function() {
+        let cursor = request.result;
+        if (cursor) {
+          data.todoLists[cursor.key] = cursor.value;
+          cursor.continue();
+        } else {
+          const { filename, fileBody, hash } = getRepeatinEventDataUpload(filename, data, event);
+          return { filename: filename, fileBody: fileBody, hash: hash }
+        }
+      };
+    };
+  },
   import(event) {
     let fr = readFile(event.target.files);
     fr.onload = function() {
@@ -43,6 +76,26 @@ export default {
         toast.show();
       }
     };
+  },
+  async download() {
+    const res = await fetch("http://localhost:8080/download?file=WeekToDoBackup.wtdb");
+    if (res.status != 200) {
+      throw new Error("Error fetching diff");
+    }
+    const fileBlob = await res.blob();
+    const file = await fileBlob.text();
+    var toast = new Toast(document.getElementById("invalidFile"));
+    try {
+      var data = JSON.parse(file);
+      if ("config" in data) {
+        importData(data);
+        migrations.migrate();
+      } else {
+        toast.show();
+      }
+    } catch (e) {
+      toast.show();
+    }
   },
   clear() {
     if (isElectron()) {
@@ -66,10 +119,36 @@ export default {
       };
     };
   },
-  sync() {
-
-
+  async sync() {
+    const { localIsNewer, oldHash } = await this.getDiff();
+    console.log(localIsNewer, oldHash);
+    const { filename, fileBody, hash } = this.localHash();
+    console.log(filename, hash)
+    if (oldHash == hash) {
+      return;
+    } else if (localIsNewer) {
+      this.uploadFile(filename, fileBody, hash);
+    } else {
+      this.download();
+    }
   },
+  async getDiff() {
+    const res = await fetch("http://localhost:8080/diff?file=WeekToDoBackup.wtdb");
+    if (res.status != 200) {
+      if (res.status == 404) {
+        return { localIsNewer: true, oldHash: "" };
+      }
+      throw new Error("Error fetching diff");
+    }
+    const data = await res.json();
+    const last_modified_time = data.last_modified_time;
+    const last_modified_time_local = localStorage.getItem("lastUpdated");
+    localStorage.removeItem("lastUpdated");
+    if (last_modified_time_local > Date.parse(last_modified_time)) {
+      return { localIsNewer: true, oldHash: "" };
+    }
+    return { localIsNewer: false, oldHash: data.hash };
+  }
 };
 
 function getRepeatinEventData(filename, data, event) {
@@ -82,6 +161,20 @@ function getRepeatinEventData(filename, data, event) {
       cursor.continue();
     } else {
       getRepeatinEventByDateData(filename, data, event);
+    }
+  };
+}
+
+function getRepeatinEventDataUpload(filename, data, event) {
+  var db = event.target.result;
+  let request = dbRepository.selectAll(db, "repeating_events");
+  request.onsuccess = function() {
+    let cursor = request.result;
+    if (cursor) {
+      data.repeating_events[cursor.key] = cursor.value;
+      cursor.continue();
+    } else {
+      return getRepeatinEventByDateDataUpload(filename, data, event);
     }
   };
 }
@@ -101,6 +194,23 @@ function getRepeatinEventByDateData(filename, data, event) {
   };
 }
 
+function getRepeatinEventByDateDataUpload(filename, data, event) {
+  var db = event.target.result;
+  let request = dbRepository.selectAll(db, "repeating_events_by_date");
+  request.onsuccess = function() {
+    let cursor = request.result;
+    if (cursor) {
+      data.repeating_events_by_date[cursor.key] = cursor.value;
+      cursor.continue();
+    } else {
+      let string_data = JSON.stringify(data);
+      const h = sha256(string_data).toString()
+      console.log(h);
+      return { filename: filename, fileBody: string_data, hash: h };
+    }
+  };
+}
+
 function createExportLink(filename, fileBody) {
   var element = document.createElement("a");
   element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(fileBody));
@@ -114,6 +224,7 @@ function createExportLink(filename, fileBody) {
     exportingModal.hide();
   }, 1000);
 }
+
 
 function readFile(files) {
   const fileList = files;

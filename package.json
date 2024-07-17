@@ -36,6 +36,7 @@
     "bootstrap": "^5.3.0",
     "bootstrap-icons": "^1.10.5",
     "core-js": "^3.20.1",
+    "crypto-js": "^4.2.0",
     "cryptocurrency-icons": "^0.17.1",
     "dmg-builder": "^25.0.0-alpha.10",
     "electron-config": "^2.0.0",
