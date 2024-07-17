@@ -1,6 +1,5 @@
 import storageRepository from "../repositories/storageRepository";
 import dbRepository from "../repositories/dbRepository";
-import s3 from "./s3";
 import { Toast, Modal } from "bootstrap";
 import migrations from "../migrations/migrations";
 import isElectron from "is-electron";
@@ -68,13 +67,8 @@ export default {
     };
   },
   sync() {
-    s3.listObjects('weektodo-app.netlify.app', function(err, data) {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log(data);
-      }
-    });
+
+
   },
 };
 

@@ -30,6 +30,7 @@ export default {
         let tx = db.transaction([table], 'readwrite');
         let store = tx.objectStore(table);
         let req = store.add(obj, id);
+        localStorage.setItem("lastUpdated", Date.now());
         return req;
     },
     update(db, table, id, obj) {
@@ -37,12 +38,14 @@ export default {
         let store = tx.objectStore(table);
         let new_obj = JSON.parse(JSON.stringify(obj));
         let req = store.put(new_obj,id);
+        localStorage.setItem("lastUpdated", Date.now());
         return req;
     },
     delete(db, table, id) {
         let tx = db.transaction([table], 'readwrite');
         let store = tx.objectStore(table);
         let req = store.delete(id);
+        localStorage.setItem("lastUpdated", Date.now());
         return req;
     },
     selectAll(db, table){
@@ -55,6 +58,7 @@ export default {
         let tx = db.transaction([table], 'readwrite');
         let store = tx.objectStore(table);
         let req = store.clear();
+        localStorage.setItem("lastUpdated", Date.now());
         return req;
     }
 };
