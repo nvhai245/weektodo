@@ -40,6 +40,7 @@
     "cryptocurrency-icons": "^0.17.1",
     "dmg-builder": "^25.0.0-alpha.10",
     "electron-config": "^2.0.0",
+    "idb": "^8.0.0",
     "is-electron": "^2.2.1",
     "json-loader": "^0.5.7",
     "linkify-string": "^3.0.4",

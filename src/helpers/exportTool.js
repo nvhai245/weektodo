@@ -37,28 +37,21 @@ export default {
       body: formData
     });
   },
-  localHash() {
-    var filename = "WeekToDoBackup.wtdb";
+  async localHash() {
+    var oldfilename = "WeekToDoBackup.wtdb";
     var data = storageRepository.as_json();
     data.todoLists = {};
     data.repeating_events = {};
     data.repeating_events_by_date = {};
-    let db_req = dbRepository.open();
+    let db = await dbRepository.openAsync();
 
-    db_req.onsuccess = function(event) {
-      var db = event.target.result;
-      let request = dbRepository.selectAll(db, "todo_lists");
-      request.onsuccess = function() {
-        let cursor = request.result;
-        if (cursor) {
-          data.todoLists[cursor.key] = cursor.value;
-          cursor.continue();
-        } else {
-          const { filename, fileBody, hash } = getRepeatinEventDataUpload(filename, data, event);
-          return { filename: filename, fileBody: fileBody, hash: hash }
-        }
-      };
-    };
+    let cursor = await dbRepository.selectAllAsync(db, "todo_lists");
+    while (cursor) {
+      data.todoLists[cursor.key] = cursor.value;
+      cursor = await cursor.continue();
+    }
+    const { filename, fileBody, hash } = await getRepeatinEventDataUpload(oldfilename, data, db);
+    return { filename: filename, fileBody: fileBody, hash: hash }
   },
   import(event) {
     let fr = readFile(event.target.files);
@@ -122,7 +115,7 @@ export default {
   async sync() {
     const { localIsNewer, oldHash } = await this.getDiff();
     console.log(localIsNewer, oldHash);
-    const { filename, fileBody, hash } = this.localHash();
+    const { filename, fileBody, hash } = await this.localHash();
     console.log(filename, hash)
     if (oldHash == hash) {
       return;
@@ -165,18 +158,13 @@ function getRepeatinEventData(filename, data, event) {
   };
 }
 
-function getRepeatinEventDataUpload(filename, data, event) {
-  var db = event.target.result;
-  let request = dbRepository.selectAll(db, "repeating_events");
-  request.onsuccess = function() {
-    let cursor = request.result;
-    if (cursor) {
-      data.repeating_events[cursor.key] = cursor.value;
-      cursor.continue();
-    } else {
-      return getRepeatinEventByDateDataUpload(filename, data, event);
-    }
-  };
+async function getRepeatinEventDataUpload(filename, data, db) {
+  let cursor = await dbRepository.selectAllAsync(db, "repeating_events");
+  while (cursor) {
+    data.todoLists[cursor.key] = cursor.value;
+    cursor = await cursor.continue();
+  }
+  return await getRepeatinEventByDateDataUpload(filename, data, db);
 }
 
 function getRepeatinEventByDateData(filename, data, event) {
@@ -194,21 +182,16 @@ function getRepeatinEventByDateData(filename, data, event) {
   };
 }
 
-function getRepeatinEventByDateDataUpload(filename, data, event) {
-  var db = event.target.result;
-  let request = dbRepository.selectAll(db, "repeating_events_by_date");
-  request.onsuccess = function() {
-    let cursor = request.result;
-    if (cursor) {
-      data.repeating_events_by_date[cursor.key] = cursor.value;
-      cursor.continue();
-    } else {
-      let string_data = JSON.stringify(data);
-      const h = sha256(string_data).toString()
-      console.log(h);
-      return { filename: filename, fileBody: string_data, hash: h };
-    }
-  };
+async function getRepeatinEventByDateDataUpload(filename, data, db) {
+  let cursor = await dbRepository.selectAllAsync(db, "repeating_events_by_date");
+  while (cursor) {
+    data.todoLists[cursor.key] = cursor.value;
+    cursor = await cursor.continue();
+  }
+  let string_data = JSON.stringify(data);
+  const h = sha256(string_data).toString()
+  console.log(h);
+  return { filename: filename, fileBody: string_data, hash: h };
 }
 
 function createExportLink(filename, fileBody) {
