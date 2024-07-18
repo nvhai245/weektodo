@@ -1,5 +1,5 @@
 <template>
-  <input class="hidden-input-for-focus" type="text" />
+  <input class="hidden-input-for-focus" type="text" @focus="syncData" />
   <div v-show="compatible" id="app-container" class="app-container" :class="{ 'dark-theme': darkTheme }">
     <div class="hidden-mobile app-body" :style="{ zoom: `${zoom}%` }">
       <splash-screen ref="splash"></splash-screen>
@@ -181,6 +181,7 @@ import ReorderCustomListsModal from "./views/ReorderCustomListsModal.vue";
 import toastMessage from "./components/toastMessage";
 import activeToDo from "./components/activeToDo.vue";
 import tasksHelper from "./helpers/tasksHelper";
+import exportTool from "./helpers/exportTool";
 
 export default {
   name: "App",
@@ -247,9 +248,10 @@ export default {
     window.addEventListener("resize", this.weekResetScroll);
     document.onreadystatechange = () => {
       if (document.readyState == "complete") {
-        setTimeout(this.hideSplash, 4500);
+        setTimeout(this.hideSplash, 1500);
       }
     };
+    document.addEventListener("visibilitychange", this.syncData);
 
     if (isElectron()) {
       const { ipcRenderer } = require("electron");
@@ -549,6 +551,9 @@ export default {
       ipcRenderer.send("set-open-on-startup", this.$store.getters.config.openOnStartup);
       ipcRenderer.send("set-run-in-background", this.$store.getters.config.runInBackground);
       ipcRenderer.send("set-dark-tray-icon", this.$store.getters.config.darkTrayIcon);
+    },
+    syncData: function () {
+      exportTool.sync();
     },
   },
   computed: {

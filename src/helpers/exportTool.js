@@ -32,7 +32,7 @@ export default {
     const formData = new FormData();
     formData.append("file", new Blob([fileBody], { type: "application/json" }), filename);
     formData.append("hash", hash);
-    fetch("http://localhost:8080/upload", {
+    fetch("http://ec2-13-250-97-59.ap-southeast-1.compute.amazonaws.com/upload", {
       method: "POST",
       body: formData
     });
@@ -71,7 +71,7 @@ export default {
     };
   },
   async download() {
-    const res = await fetch("http://localhost:8080/download?file=WeekToDoBackup.wtdb");
+    const res = await fetch("http://ec2-13-250-97-59.ap-southeast-1.compute.amazonaws.com/download?file=WeekToDoBackup.wtdb");
     if (res.status != 200) {
       throw new Error("Error fetching diff");
     }
@@ -114,9 +114,7 @@ export default {
   },
   async sync() {
     const { localIsNewer, oldHash } = await this.getDiff();
-    console.log(localIsNewer, oldHash);
     const { filename, fileBody, hash } = await this.localHash();
-    console.log(filename, hash)
     if (oldHash == hash) {
       return;
     } else if (localIsNewer) {
@@ -126,7 +124,7 @@ export default {
     }
   },
   async getDiff() {
-    const res = await fetch("http://localhost:8080/diff?file=WeekToDoBackup.wtdb");
+    const res = await fetch("http://ec2-13-250-97-59.ap-southeast-1.compute.amazonaws.com/diff?file=WeekToDoBackup.wtdb");
     if (res.status != 200) {
       if (res.status == 404) {
         return { localIsNewer: true, oldHash: "" };
@@ -138,7 +136,7 @@ export default {
     const last_modified_time_local = localStorage.getItem("lastUpdated");
     localStorage.removeItem("lastUpdated");
     if (last_modified_time_local > Date.parse(last_modified_time)) {
-      return { localIsNewer: true, oldHash: "" };
+      return { localIsNewer: true, oldHash: data.hash };
     }
     return { localIsNewer: false, oldHash: data.hash };
   }
@@ -190,7 +188,6 @@ async function getRepeatinEventByDateDataUpload(filename, data, db) {
   }
   let string_data = JSON.stringify(data);
   const h = sha256(string_data).toString()
-  console.log(h);
   return { filename: filename, fileBody: string_data, hash: h };
 }
 
