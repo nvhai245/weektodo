@@ -47,4 +47,7 @@ export default {
   update(config) {
     storageRepository.set("config", config);
   },
+  updateNotSynced(config) {
+    storageRepository.setNotSynced("config", config);
+  },
 };

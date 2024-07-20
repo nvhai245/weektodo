@@ -6,6 +6,9 @@ export default {
         localStorage.setItem(key, JSON.stringify(obj));
         localStorage.setItem("lastUpdated", Date.now());
     },
+    setNotSynced(key, obj) {
+        localStorage.setItem(key, JSON.stringify(obj));
+    },
     remove(key) {
         localStorage.removeItem(key);
         localStorage.setItem("lastUpdated", Date.now());

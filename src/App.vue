@@ -399,15 +399,16 @@ export default {
             this.moveOldTasksToToday().then(() => {
               this.refreshTodayNotifications();
               this.$store.commit("updateConfig", { val: moment().format("YYYYMMDD"), key: "lastDayOpened" });
-              configRepository.update(this.$store.getters.config);
+              configRepository.updateNotSynced(this.$store.getters.config);
               if (isElectron()) this.showInitialNotification();
             });
           } else {
             this.refreshTodayNotifications();
             if (isElectron()) this.showInitialNotification();
             this.$store.commit("updateConfig", { val: moment().format("YYYYMMDD"), key: "lastDayOpened" });
-            configRepository.update(this.$store.getters.config);
+            configRepository.updateNotSynced(this.$store.getters.config);
           }
+          this.syncData();
         }
       }
     },
@@ -474,14 +475,14 @@ export default {
           let listId = moment().subtract(i, "d").format("YYYYMMDD");
           this.$store.dispatch("loadTodoLists", listId).then(() => {
             this.$store.commit("moveUndoneItems", { origenId: listId, destinyId: todayListId });
-            toDoListRepository.update(listId, this.$store.getters.todoLists[listId]);
+            toDoListRepository.updateNotSynced(listId, this.$store.getters.todoLists[listId]);
             if (this.$store.getters.config.autoReorderTasks) {
-              toDoListRepository.update(
+              toDoListRepository.updateNotSynced(
                 todayListId,
                 tasksHelper.reorderTasksList(this.$store.getters.todoLists[todayListId])
               );
             } else {
-              toDoListRepository.update(todayListId, this.$store.getters.todoLists[todayListId]);
+              toDoListRepository.updateNotSynced(todayListId, this.$store.getters.todoLists[todayListId]);
             }
             if (i == daysBefore) {
               resolve("done!");

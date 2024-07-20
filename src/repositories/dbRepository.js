@@ -47,6 +47,13 @@ export default {
     localStorage.setItem("lastUpdated", Date.now());
     return req;
   },
+  updateNotSynced(db, table, id, obj) {
+    let tx = db.transaction([table], 'readwrite');
+    let store = tx.objectStore(table);
+    let new_obj = JSON.parse(JSON.stringify(obj));
+    let req = store.put(new_obj, id);
+    return req;
+  },
   delete(db, table, id) {
     let tx = db.transaction([table], 'readwrite');
     let store = tx.objectStore(table);

@@ -1,8 +1,9 @@
-FROM node:16-alpine
+FROM electronuserland/builder:wine as builder
+RUN apt-get update
 WORKDIR /app
-COPY package.json /app
-COPY yarn.lock /app
-RUN yarn install --frozen-lockfile && yarn cache clean
-COPY . /app
-CMD yarn run serve
-EXPOSE 8080
+COPY . .
+RUN yarn install --ignore-engines
+RUN yarn run electron:build --win --x64
+
+FROM scratch
+COPY --from=builder /app/dist_electron /app
