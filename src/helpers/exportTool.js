@@ -32,7 +32,7 @@ export default {
     const formData = new FormData();
     formData.append("file", new Blob([fileBody], { type: "application/json" }), filename);
     formData.append("hash", hash);
-    fetch("http://ec2-13-250-97-59.ap-southeast-1.compute.amazonaws.com/upload", {
+    fetch("http://18.142.254.165:8080/upload", {
       method: "POST",
       body: formData
     });
@@ -71,7 +71,7 @@ export default {
     };
   },
   async download() {
-    const res = await fetch("http://ec2-13-250-97-59.ap-southeast-1.compute.amazonaws.com/download?file=WeekToDoBackup.wtdb");
+    const res = await fetch("http://18.142.254.165:8080/download?file=WeekToDoBackup.wtdb");
     if (res.status != 200) {
       throw new Error("Error fetching diff");
     }
@@ -124,7 +124,7 @@ export default {
     }
   },
   async getDiff() {
-    const res = await fetch("http://ec2-13-250-97-59.ap-southeast-1.compute.amazonaws.com/diff?file=WeekToDoBackup.wtdb");
+    const res = await fetch("http://18.142.254.165:8080/diff?file=WeekToDoBackup.wtdb");
     if (res.status != 200) {
       if (res.status == 404) {
         return { localIsNewer: true, oldHash: "" };
